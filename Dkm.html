@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Rasa - Katalog Order</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #fdfbf7; font-family: 'Segoe UI', sans-serif; }
+        .category-card { border-left: 4px solid #8b5e3c; }
+        .sticky-cart { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body class="pb-32">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-black text-orange-900 leading-none uppercase">Ruang Rasa</h1>
+                <p class="text-[10px] text-gray-500 tracking-widest uppercase mt-1">Losari, Brebes</p>
+            </div>
+            <button onclick="toggleModal()" class="relative p-2 bg-orange-50 rounded-full text-orange-800">
+                <i class="fas fa-shopping-basket text-xl"></i>
+                <span id="badge-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center hidden border-2 border-white">0</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 mt-6 max-w-2xl">
+        <section class="mb-10">
+            <h2 class="text-lg font-bold text-orange-800 mb-4 category-card pl-3 uppercase">Food Series (Open PO)</h2>
+            <div id="food-container" class="space-y-3"></div>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-lg font-bold text-blue-800 mb-4 category-card pl-3 uppercase">Milkdrink Series (10K)</h2>
+            <div id="milk-container" class="grid grid-cols-1 gap-3"></div>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-lg font-bold text-amber-900 mb-4 category-card pl-3 uppercase">Coffee Series (10K)</h2>
+            <div id="coffee-container" class="grid grid-cols-1 gap-3"></div>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-lg font-bold text-green-700 mb-4 category-card pl-3 uppercase">Tea Series</h2>
+            <div id="tea-container" class="grid grid-cols-1 gap-3"></div>
+        </section>
+    </main>
+
+    <div id="cart-modal" class="fixed inset-0 bg-black/60 z-[200] hidden flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl">
+            <div class="p-5 border-b flex justify-between items-center bg-orange-50">
+                <h3 class="font-bold text-orange-900">Rincian Pesanan</h3>
+                <button onclick="toggleModal()" class="text-gray-400 text-2xl font-bold">&times;</button>
+            </div>
+            
+            <div class="p-5 max-h-[60vh] overflow-y-auto space-y-5">
+                <div id="cart-items-list" class="space-y-2"></div>
+                
+                <div class="pt-4 border-t">
+                    <label class="block text-sm font-bold text-gray-800 mb-3">Metode Pembayaran:</label>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-orange-50 transition">
+                            <input type="radio" name="payment" value="Cash" checked onchange="togglePaymentInfo()">
+                            <span class="ml-3 font-medium text-gray-700">Bayar di Tempat (Cash)</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-orange-50 transition">
+                            <input type="radio" name="payment" value="Transfer Mandiri" onchange="togglePaymentInfo()">
+                            <span class="ml-3 font-medium text-gray-700">Transfer Bank Mandiri</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="payment-info" class="hidden">
+                    <div id="info-transfer" class="hidden bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center">
+                        <p class="text-[10px] font-bold text-blue-400 uppercase mb-1 tracking-widest">Nomor Rekening</p>
+                        <p class="font-black text-blue-900 text-xl tracking-wider">1340020334925</p>
+                        <p class="text-xs text-blue-800">Bank Mandiri a.n Denisa</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 border-t bg-gray-50">
+                <div class="flex justify-between mb-4 font-bold text-orange-900 text-xl">
+                    <span>Total Tagihan</span>
+                    <span id="modal-total">Rp 0</span>
+                </div>
+                <button onclick="sendWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95">
+                    <i class="fab fa-whatsapp text-xl"></i> Kirim ke WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-2xl hidden sticky-cart z-[100]">
+        <div class="container mx-auto max-w-2xl flex justify-between items-center" onclick="toggleModal()">
+            <div class="flex items-center gap-3">
+                <div class="bg-orange-800 text-white p-2 rounded-lg"><i class="fas fa-shopping-bag"></i></div>
+                <div>
+                    <p id="cart-count-text" class="text-[10px] text-gray-400 font-bold uppercase">0 Item</p>
+                    <p id="cart-total" class="text-xl font-black text-orange-900 leading-none">Rp 0</p>
+                </div>
+            </div>
+            <div class="bg-orange-800 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-md">Checkout</div>
+        </div>
+    </div>
+
+    <script>
+        const menuData = {
+            food: [
+                {n: "Baso Aci Keju", p: 8000}, {n: "Baso Aci Jumbo Ayam Suir", p: 8000},
+                {n: "Dimsum Mager Mentai", p: 10000}, {n: "Cheese Roll", p: 10000},
+                {n: "Risol Ubi Keju/Coklat", p: 10000}, {n: "Dimsum Goreng Keju", p: 10000}
+            ],
+            milk: [
+                {n: "Taro", p: 10000}, {n: "Red Velvet", p: 10000}, {n: "Capucino", p: 10000},
+                {n: "Almond", p: 10000}, {n: "Piscok", p: 10000}, {n: "Milo", p: 10000},
+                {n: "Avocado", p: 10000}, {n: "Matcha", p: 10000}, {n: "Tiramisu", p: 10000}
+            ],
+            coffee: [
+                {n: "Creamy Coffee", p: 10000}, {n: "Milk Coffee", p: 10000}, 
+                {n: "Mochaccino", p: 10000}, {n: "Vanilla Latte", p: 10000}, {n: "Espresso", p: 10000}
+            ],
+            tea: [
+                {n: "Original Tea", p: 4000}, {n: "Peach Tea", p: 5000}, {n: "Lemon Tea", p: 5000},
+                {n: "Lechi Tea", p: 5000}, {n: "Apple Tea", p: 5000}, {n: "Lemonade", p: 5000},
+                {n: "Blackcurn Tea", p: 5000}, {n: "Milk Tea", p: 5000}, {n: "Teh Tarik", p: 5000}, {n: "Thai Tea", p: 5000}
+            ]
+        };
+
+        let cart = {};
+
+        function renderMenu() {
+            for (let cat in menuData) {
+                const container = document.getElementById(`${cat}-container`);
+                menuData[cat].forEach(item => {
+                    const idName = item.n.replace(/[/ ]/g, '-');
+                    container.innerHTML += `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center border border-gray-100">
+                            <div><h3 class="font-bold text-gray-800 text-sm">${item.n}</h3><p class="text-orange-600 font-bold text-xs">Rp ${item.p.toLocaleString('id-ID')}</p></div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="updateQty('${item.n}', ${item.p}, -1)" class="w-8 h-8 rounded-lg bg-white border border-gray-100 font-bold text-orange-800">-</button>
+                                <span id="qty-${idName}" class="font-black w-6 text-center text-sm">0</span>
+                                <button onclick="updateQty('${item.n}', ${item.p}, 1)" class="w-8 h-8 rounded-lg bg-orange-800 text-white font-bold shadow-md">+</button>
+                            </div>
+                        </div>`;
+                });
+            }
+        }
+
+        function updateQty(name, price, change) {
+            if (!cart[name]) cart[name] = { qty: 0, price: price };
+            cart[name].qty += change;
+            if (cart[name].qty <= 0) delete cart[name];
+            const idName = name.replace(/[/ ]/g, '-');
+            const qtyEl = document.getElementById(`qty-${idName}`);
+            if(qtyEl) qtyEl.innerText = cart[name] ? cart[name].qty : 0;
+            updateCartDisplay();
+            updateModalItems();
+        }
+
+        function updateCartDisplay() {
+            let total = 0, count = 0;
+            for (let key in cart) { total += cart[key].qty * cart[key].price; count += cart[key].qty; }
+            const bar = document.getElementById('cart-bar'), badge = document.getElementById('badge-count');
+            if (count > 0) {
+                bar.classList.remove('hidden'); badge.classList.remove('hidden'); badge.innerText = count;
+                document.getElementById('cart-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+                document.getElementById('modal-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+                document.getElementById('cart-count-text').innerText = `${count} Item Terpilih`;
+            } else { bar.classList.add('hidden'); badge.classList.add('hidden'); }
+        }
+
+        function updateModalItems() {
+            const listContainer = document.getElementById('cart-items-list');
+            listContainer.innerHTML = '';
+            for (let key in cart) {
+                listContainer.innerHTML += `<div class="flex justify-between items-center text-xs p-3 bg-gray-50 rounded-xl"><span class="font-bold">${key} (x${cart[key].qty})</span><span class="font-black">Rp ${(cart[key].qty * cart[key].price).toLocaleString('id-ID')}</span></div>`;
+            }
+        }
+
+        function togglePaymentInfo() {
+            const method = document.querySelector('input[name="payment"]:checked').value;
+            const info = document.getElementById('payment-info'), transfer = document.getElementById('info-transfer');
+            info.classList.remove('hidden'); 
+            transfer.classList.add('hidden');
+            if(method === "Transfer Mandiri") transfer.classList.remove('hidden');
+            else info.classList.add('hidden');
+        }
+
+        function toggleModal() { document.getElementById('cart-modal').classList.toggle('hidden'); }
+
+        function sendWhatsApp() {
+            const payment = document.querySelector('input[name="payment"]:checked').value;
+            let msg = "*PESANAN RUANG RASA*\n--------------------------\n", total = 0;
+            for (let key in cart) { msg += `• ${key} (${cart[key].qty}x)\n`; total += cart[key].qty * cart[key].price; }
+            msg += `\n*Pembayaran:* ${payment}\n*Total:* Rp ${total.toLocaleString('id-ID')}\n--------------------------\nTerima kasih!`;
+            window.open(`https://wa.me/6283837375451?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        renderMenu();
+    </script>
+</body>
+</html>
